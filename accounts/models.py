@@ -7,6 +7,8 @@ from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 from django.core.mail import send_mail
 
+from utils.helper import random_string
+
 
 class CustomAccountManager(BaseUserManager):
     def create_user(self, email, username, password, **other_fields):
@@ -45,6 +47,11 @@ class Account(AbstractBaseUser, PermissionsMixin):
     objects = CustomAccountManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.uuid = random_string()
+        return super(Account, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.email

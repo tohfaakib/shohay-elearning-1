@@ -1,42 +1,54 @@
 import requests
 from django.contrib.sites.shortcuts import get_current_site
-from django.shortcuts import render
+from django.db.models import QuerySet
+from django.shortcuts import render, get_object_or_404
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from rest_framework import status, generics
 from rest_framework.response import Response
 
 from utils.helper import random_string
-from .serializers import RegistrationSerializer, UsersSerializer, ChangePasswordSerializer
+from .serializers import RegistrationSerializer, UsersSerializer, ChangePasswordSerializer, UpdateProfileSerializer
 from rest_framework import permissions
 from .models import Account
 from oauth2_provider.models import get_application_model
 from django.contrib.auth.models import User
 
 
+def check_superuser(request):
+    try:
+        client_id = request.data['client_id']
+    except:
+        client_id = None
+
+    try:
+        client_secret = request.data['client_secret']
+    except:
+        client_secret = None
+
+    if not client_id:
+        # return Response({'message': 'Please provide client id.'}, status=HTTP_400_BAD_REQUEST)
+        return 'Please provide client id.'
+
+    if not client_secret:
+        # return Response({'message': 'Please provide client secret.'}, status=HTTP_400_BAD_REQUEST)
+        return 'Please provide client secret.'
+
+    outh_app_model = get_application_model().objects.filter(client_id=client_id, client_secret=client_secret)
+    if outh_app_model.count() <= 0:
+        # return Response({'message': 'Invalid client id or client secret.'}, status=HTTP_400_BAD_REQUEST)
+        return 'Invalid client id or client secret.'
+
+    return None
+
+
 class CreateAccount(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        try:
-            client_id = request.data['client_id']
-        except:
-            client_id = None
-
-        try:
-            client_secret = request.data['client_secret']
-        except:
-            client_secret = None
-
-        if not client_id:
-            return Response({'message': 'Please provide client id.'}, status=HTTP_400_BAD_REQUEST)
-
-        if not client_secret:
-            return Response({'message': 'Please provide client secret.'}, status=HTTP_400_BAD_REQUEST)
-
-        outh_app_model = get_application_model().objects.filter(client_id=client_id, client_secret=client_secret)
-        if outh_app_model.count() <= 0:
-            return Response({'message': 'Invalid client id or client secret.'}, status=HTTP_400_BAD_REQUEST)
+        err_msg = check_superuser(request)
+        if err_msg is not None:
+            return Response({'message': err_msg}, status=HTTP_400_BAD_REQUEST)
 
         request_data = request.data
         try:
@@ -53,8 +65,8 @@ class CreateAccount(APIView):
                 r = requests.post(f'http://{current_domain}/api/token', data={
                     'username': new_user.email,
                     'password': request.data['password'],
-                    'client_id': client_id,
-                    'client_secret': client_secret,
+                    'client_id': request.data['client_id'],
+                    'client_secret': request.data['client_secret'],
                     'grant_type': 'password'
                 })
                 return Response(r.json(), status=status.HTTP_201_CREATED)
@@ -250,6 +262,82 @@ class ResetPasswordConfirm(APIView):
                 error_message[key] = value
             return Response({"message": error_message}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message": "Password changed."}, status=status.HTTP_200_OK)
+
+
+#
+
+
+# class UpdateProfile(generics.UpdateAPIView):
+#     serializer_class = UpdateProfileSerializer
+#     permission_classes = (permissions.IsAuthenticated,)
+#     queryset = Account.objects.all()
+#
+#     # def get_queryset(self):
+#     #     assert self.queryset is not None, (
+#     #             "'%s' should either include a `queryset` attribute, "
+#     #             "or override the `get_queryset()` method."
+#     #             % self.__class__.__name__
+#     #     )
+#     #
+#     #     queryset = self.queryset
+#     #     if isinstance(queryset, QuerySet):
+#     #         # Ensure queryset is re-evaluated on each request.
+#     #         queryset = queryset.all()
+#     #     return queryset
+#
+#     # def get_object(self):
+#     #     queryset = self.get_queryset()
+#     #     obj = get_object_or_404(queryset, user=self.request.user)
+#     #     return obj
+#
+#     def get_object(self):
+#         # queryset = self.get_queryset()
+#         # obj = get_object_or_404(queryset, user=self.request.user.email)
+#         obj = get_object_or_404(self.queryset, id=self.request.user.id)
+#         # obj = Account.objects.get(user=self.request.user.email)
+#         print('obj', obj)
+#         return obj
+#
+#     def update(self, request, *args, **kwargs):
+#         # self.queryset = Account.objects.get(uuid=request.user.uuid)
+#         # self.queryset = self.get_object()
+#         partial = kwargs.pop('partial', False)
+#         instance = self.get_object()
+#         print(instance)
+#         # serializer = self.get_serializer(instance, data=request.data, partial=partial)
+#         serializer = UpdateProfileSerializer(instance, data=request.data, partial=partial)
+#         serializer.is_valid(raise_exception=False)
+#         self.perform_update(serializer)
+#         return Response(serializer.data)
+
+
+class UpdateProfile(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        err_msg = check_superuser(request)
+        if err_msg is not None:
+            return Response({'message': err_msg}, status=HTTP_400_BAD_REQUEST)
+
+        request_data = request.data
+        # ins = Account.objects.filter(uuid=request.user.uuid)
+        ins = Account.objects.get(uuid=request.user.uuid)
+
+        serializer = UpdateProfileSerializer(instance=ins, data=request_data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            # if updated:
+            return Response({"message": "updated"}, status=status.HTTP_201_CREATED)
+
+        serializer_errors = serializer._errors
+
+        error_massage = {}
+        for key in serializer_errors:
+            error_massage[key] = serializer_errors[key][0]
+
+        return Response({'message': error_massage}, status=HTTP_400_BAD_REQUEST)
+
+
 
 
 class AllUsers(generics.ListAPIView):
