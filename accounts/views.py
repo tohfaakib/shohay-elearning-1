@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework import status, generics
 from rest_framework.response import Response
 
-from utils.helper import random_string
+from utils.helper import random_string, bd_phone_validator
 from .serializers import RegistrationSerializer, UsersSerializer, ChangePasswordSerializer, UpdateProfileSerializer
 from rest_framework import permissions
 from .models import Account
@@ -321,8 +321,15 @@ class UpdateProfile(APIView):
 
         request_data = request.data
         # ins = Account.objects.filter(uuid=request.user.uuid)
+        print('uuid', request.user.uuid)
         ins = Account.objects.get(uuid=request.user.uuid)
-
+        print('ins:', ins)
+        # print(request_data)
+        if 'phone' in request_data:
+            if request_data['phone'] != '':
+                is_valid = bd_phone_validator(request_data['phone'])
+                if not is_valid:
+                    return Response({'message': {"phone": "Please provide valid phone number."}}, status=HTTP_400_BAD_REQUEST)
         serializer = UpdateProfileSerializer(instance=ins, data=request_data, context={'request': request})
         if serializer.is_valid():
             serializer.save()

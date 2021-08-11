@@ -34,17 +34,7 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ('username', 'first_name', 'last_name')
-        extra_kwargs = {
-            'first_name': {'required': True},
-            'last_name': {'required': True},
-        }
-
-    def validate_email(self, value):
-        user = self.context['request'].user
-        if Account.objects.exclude(pk=user.pk).filter(email=value).exists():
-            raise serializers.ValidationError({"email": "This email is already in use."})
-        return value
+        fields = ('username', 'first_name', 'last_name', 'phone', 'current_institute', 'preferred_higher_education')
 
     def validate_username(self, value):
         user = self.context['request'].user
@@ -53,10 +43,20 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance, validated_data):
+        # print(validated_data)
         instance.first_name = validated_data['first_name']
         instance.last_name = validated_data['last_name']
         # instance.email = validated_data['email']
         instance.username = validated_data['username']
+        if 'phone' in validated_data:
+            if validated_data['phone'] != '':
+                instance.phone = validated_data['phone']
+        if 'current_institute' in validated_data:
+            if validated_data['current_institute'] != '':
+                instance.current_institute = validated_data['current_institute']
+        if 'preferred_higher_education' in validated_data:
+            if validated_data['preferred_higher_education'] != '':
+                instance.preferred_higher_education = validated_data['preferred_higher_education']
 
         instance.save()
 
