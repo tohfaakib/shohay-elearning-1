@@ -159,8 +159,8 @@ REST_FRAMEWORK = {
 
 
 # Facebook configuration
-SOCIAL_AUTH_FACEBOOK_KEY = 'your facebook key'
-SOCIAL_AUTH_FACEBOOK_SECRET = 'your facebook secret'
+SOCIAL_AUTH_FACEBOOK_KEY = config('SOCIAL_AUTH_FACEBOOK_KEY')
+SOCIAL_AUTH_FACEBOOK_SECRET = config('SOCIAL_AUTH_FACEBOOK_SECRET')
 
 # Define SOCIAL_AUTH_FACEBOOK_SCOPE to get extra permissions from Facebook.
 # Email is not sent by default, to get it, you must request the email permission.
@@ -171,14 +171,14 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
 
 SOCIAL_AUTH_USER_FIELDS = ['email', 'first_name', 'username', 'password']
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "your google oauth2 key"
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "your google oauth2 secret"
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 # Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
-
-
+# ACTIVATE_JWT = True
+# DRFSO2_URL_NAMESPACE = "drf"
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

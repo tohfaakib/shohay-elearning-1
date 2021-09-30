@@ -264,53 +264,6 @@ class ResetPasswordConfirm(APIView):
         return Response({"message": "Password changed."}, status=status.HTTP_200_OK)
 
 
-#
-
-
-# class UpdateProfile(generics.UpdateAPIView):
-#     serializer_class = UpdateProfileSerializer
-#     permission_classes = (permissions.IsAuthenticated,)
-#     queryset = Account.objects.all()
-#
-#     # def get_queryset(self):
-#     #     assert self.queryset is not None, (
-#     #             "'%s' should either include a `queryset` attribute, "
-#     #             "or override the `get_queryset()` method."
-#     #             % self.__class__.__name__
-#     #     )
-#     #
-#     #     queryset = self.queryset
-#     #     if isinstance(queryset, QuerySet):
-#     #         # Ensure queryset is re-evaluated on each request.
-#     #         queryset = queryset.all()
-#     #     return queryset
-#
-#     # def get_object(self):
-#     #     queryset = self.get_queryset()
-#     #     obj = get_object_or_404(queryset, user=self.request.user)
-#     #     return obj
-#
-#     def get_object(self):
-#         # queryset = self.get_queryset()
-#         # obj = get_object_or_404(queryset, user=self.request.user.email)
-#         obj = get_object_or_404(self.queryset, id=self.request.user.id)
-#         # obj = Account.objects.get(user=self.request.user.email)
-#         print('obj', obj)
-#         return obj
-#
-#     def update(self, request, *args, **kwargs):
-#         # self.queryset = Account.objects.get(uuid=request.user.uuid)
-#         # self.queryset = self.get_object()
-#         partial = kwargs.pop('partial', False)
-#         instance = self.get_object()
-#         print(instance)
-#         # serializer = self.get_serializer(instance, data=request.data, partial=partial)
-#         serializer = UpdateProfileSerializer(instance, data=request.data, partial=partial)
-#         serializer.is_valid(raise_exception=False)
-#         self.perform_update(serializer)
-#         return Response(serializer.data)
-
-
 class UpdateProfile(APIView):
     permission_classes = [permissions.AllowAny]
 

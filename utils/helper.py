@@ -1,5 +1,6 @@
 import random
 import string
+import requests
 
 
 def random_string(stringLength=32):
@@ -19,3 +20,17 @@ def bd_phone_validator(phone):
 
     return False
 
+
+# def get_access_token():
+#     url = 'https://www.googleapis.com/oauth2/v4/token%20code=4/0AX4XfWirAf4Llj-nTWg9G5Qjt_L6MykUJKl5cEbqXl59tJF2XXcHE263HgrYE2vWN4iuFw&redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&client_id=1040181526072-vglso30oqj92ubg63mttjqh5uhm0abg5.apps.googleusercontent.com&client_secret=tuVVoUEQodSCl-9NLA2alW1V&scope=&grant_type=authorization_code'
+#     data = {
+#         'Content-length': '233',
+#         'content-type': 'application/x-www-form-urlencoded',
+#         'user-agent': 'google-oauth-playground',
+#     }
+#     res = requests.post(url, json=data)
+#
+#     print(res.text)
+#     print(res.status_code)
+#
+# get_access_token()
